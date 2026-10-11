@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.blackburn_code.twa",
+    "sha256_cert_fingerprints": ["0D:29:8A:99:74:23:87:0F:0D:79:4E:81:8F:26:FB:86:9F:B6:71:7C:5D:94:30:9F:BC:D4:9F:85:35:F1:D6:79"]
+  }
+}]
