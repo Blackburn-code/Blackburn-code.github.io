@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Tokyo Station at Dusk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+<style>
+/* Layout: one centred portrait canvas, like a phone story frame, with a quiet caption and replay control under it */
+:root {
+  --bg: #120f1f;
+  --frame: #1d1830;
+  --fg: #ece8f6;
+  --muted: #a39cbf;
+  --accent: #f2b45a;
+  --font: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { background: #000; color: var(--fg); height: 100%; margin: 0; overflow: hidden; }
+body { font-family: var(--font); }
+.frame { position: fixed; inset: 0; background: #000; }
+canvas { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center bottom; }
+.bar {
+  position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 12px;
+}
+.caption { display: none; }
+button {
+  font: 700 13px var(--font);
+  color: #fff; background: rgba(20,16,35,.55);
+  border: 1px solid rgba(255,255,255,.35);
+  backdrop-filter: blur(6px);
+  border-radius: 999px; padding: 8px 14px; cursor: pointer;
+}
+button:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+</style>
+
+</head>
+<body>
+<div class="frame"><canvas id="c" width="1080" height="1920" aria-label="Lukisan Tokyo Station waktu senja"></canvas></div>
+<div class="bar">
+  <span class="caption">東京駅 · dilukis guna kod</span>
+  <button id="replay" type="button">Lukis semula</button>
+</div>
+
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const S = 2; // canvas is 2x for sharpness
+let H = 960;  // tinggi logik; dipanjangkan ke atas (lebih langit) untuk skrin telefon yang tinggi
+const X = x => (x + 270) * S, Y = y => (H - 480 - y) * S;
+function fit(){
+  const ratio = innerHeight / innerWidth;
+  H = Math.max(960, Math.round(540 * ratio));
+  cv.width = 540 * S; cv.height = H * S;
+  cv.style.objectFit = ratio >= 960 / 540 ? 'fill' : 'contain';
+}
+const rgb = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+let ops = [];
+const poly = (pts, c) => ops.push(() => { ctx.fillStyle = rgb(c); ctx.beginPath(); pts.forEach((p,i)=> i? ctx.lineTo(X(p[0]),Y(p[1])) : ctx.moveTo(X(p[0]),Y(p[1]))); ctx.closePath(); ctx.fill(); });
+const rect = (x,y,w,h,c) => poly([[x,y],[x+w,y],[x+w,y+h],[x,y+h]], c);
+const line = (pts, c, w) => ops.push(() => { ctx.strokeStyle = rgb(c); ctx.lineWidth = w*S; ctx.lineCap = 'round'; ctx.lineJoin='round'; ctx.beginPath(); pts.forEach((p,i)=> i? ctx.lineTo(X(p[0]),Y(p[1])) : ctx.moveTo(X(p[0]),Y(p[1]))); ctx.stroke(); });
+const dot = (x,y,size,c) => ops.push(() => { ctx.fillStyle = rgb(c); ctx.beginPath(); ctx.arc(X(x),Y(y),size/2*S,0,Math.PI*2); ctx.fill(); });
+const glow = (x,y,s) => [[s*4,[95,85,120]],[s*2.5,[175,155,115]],[s*1.5,[240,210,130]],[s,[255,250,215]]].forEach(([z,c])=>dot(x,y,z,c));
+function gradient(top, bot, ct, cb){
+  for (let y = top; y > bot; y -= 3){
+    const t = (top - y) / (top - bot);
+    const c = ct.map((v,i)=> Math.round(v + (cb[i]-v)*t));
+    line([[-270,y],[270,y]], c, 4);
+  }
+}
+
+function build(){
+  ops = [];
+  const r = rng(7);
+  ops.push(() => { ctx.fillStyle = '#000'; ctx.fillRect(0,0,cv.width,cv.height); });
+
+  // langit
+  gradient(H - 480, -190, [40,32,85], [150,135,200]);
+
+  // bangunan tinggi
+  function tower(x, w, top, base=-60){
+    rect(x, base, w, top-base, [35,40,65]);
+    for (let yy = base+8; yy < top-10; yy += 12)
+      for (let xx = x+5; xx < x+w-8; xx += 9)
+        if (r() < 0.65) rect(xx, yy, 6, 5, [[255,225,130],[250,240,190],[230,200,110]][Math.floor(r()*3)]);
+  }
+  tower(-270,40,420); tower(-235,95,230); tower(25,150,340);
+  rect(25,330,150,10,[20,20,35]); tower(185,85,110);
+
+  // stesen
+  const base=-180, topb=-55, BRICK=[140,55,40], ROOF=[45,40,50];
+  rect(-270, base, 540, topb-base, BRICK);
+  rect(-60, base, 120, topb-base, [225,140,55]);
+  [-140,-100].forEach(yy => rect(-270, yy, 540, 4, [225,205,180]));
+  poly([[-270,topb],[270,topb],[255,-30],[-255,-30]], ROOF);
+  [-130,130].forEach(cx => {
+    rect(cx-25, topb, 50, 45, BRICK);
+    poly([[cx-30,-10],[cx+30,-10],[cx,35]], ROOF);
+    rect(cx-12,-45,9,16,[255,210,110]); rect(cx+3,-45,9,16,[255,210,110]);
+  });
+  rect(-60, topb, 120, 55, [235,150,60]);
+  rect(-15, -45, 30, 32, [255,230,160]);
+  poly([[-70,0],[70,0],[50,40],[-50,40]], ROOF);
+  poly([[-20,40],[20,40],[0,70]], ROOF);
+  line([[0,70],[0,95]], ROOF, 2);
+  [-170,-130,-90].forEach(wy => { for (let xx=-262; xx<262; xx+=22) rect(xx, wy, 10, 20, (xx>-62 && xx<60) ? [255,235,170] : [255,200,90]); });
+  rect(-270, -188, 540, 8, [255,170,70]);
+
+  // lampu jalan
+  line([[-205,-190],[-205,140]], [30,30,30], 6);
+  line([[-160,-190],[-160,40]], [30,30,30], 6);
+  [[-217,140,12],[-193,140,12],[-205,162,12],[-217,100,10],[-193,100,10],[-170,40,10],[-150,40,10],[-160,58,10]].forEach(g => glow(...g));
+
+  // rumput & laluan
+  gradient(-188, -480, [90,140,55], [50,105,35]);
+  poly([[-270,-188],[-120,-188],[-20,-480],[-270,-480]], [145,135,125]);
+  for (let yy=-210; yy>-480; yy-=30) line([[-270,yy],[-120+(-188-yy)*0.34, yy]], [125,115,105], 1);
+
+  // pagar
+  line([[-100,-205],[270,-205]], [40,40,40], 2);
+  for (let xx=-100; xx<=270; xx+=40) line([[xx,-205],[xx,-192]], [40,40,40], 2);
+  const posts = [[-10,-300],[45,-335],[115,-375],[190,-420],[262,-465]];
+  posts.forEach(([px,py]) => line([[px,py],[px,py+70]], [235,235,230], 5));
+  for (let i=0;i<posts.length-1;i++){ const [x1,y1]=posts[i],[x2,y2]=posts[i+1]; line([[x1,y1+60],[(x1+x2)/2,(y1+y2)/2+45],[x2,y2+60]], [20,20,20], 2); }
+
+  // orang ambil gambar
+  const SHIRT=[225,222,235], DARK=[18,18,22];
+  poly([[-250,-330],[-150,-310],[-140,-480],[-270,-480]], [25,25,30]);
+  poly([[-200,-290],[-60,-290],[-40,-480],[-210,-480]], SHIRT);
+  poly([[-205,-210],[-90,-210],[-70,-320],[-215,-330]], DARK);
+  dot(-150,-200,110,DARK);
+  line([[-95,-285],[-10,-240]], SHIRT, 18);
+  line([[-70,-300],[-20,-250],[0,-218]], SHIRT, 22);
+  dot(-28,-258,10,[240,240,240]);
+  dot(5,-215,18,[200,160,130]);
+  rect(-5,-245,32,58,[30,30,35]); rect(-1,-240,24,48,[170,180,210]); rect(2,-225,18,8,[200,120,60]);
+
+  // kapsyen
+  ops.push(() => { ctx.fillStyle = '#fff'; ctx.font = `${22*S}px ${getComputedStyle(document.body).fontFamily}`; ctx.textAlign = 'center'; ctx.fillText('tokyo station', X(140), Y(-455)); });
+}
+
+let raf = 0;
+function play(){
+  cancelAnimationFrame(raf);
+  fit();
+  build();
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce){ ops.forEach(f => f()); return; }
+  let i = 0;
+  const step = () => { const end = Math.min(ops.length, i + 7); for (; i < end; i++) ops[i](); if (i < ops.length) raf = requestAnimationFrame(step); };
+  step();
+}
+document.getElementById('replay').addEventListener('click', play);
+let rt, lastW = innerWidth;
+addEventListener('resize', () => { if (innerWidth === lastW) return; lastW = innerWidth; clearTimeout(rt); rt = setTimeout(play, 250); });
+(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(play);
+</script>
+
+</body>
+</html>
