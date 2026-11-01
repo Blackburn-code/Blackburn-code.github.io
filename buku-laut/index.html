@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F6F7F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#060B16" media="(prefers-color-scheme: dark)">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Buku Laut Nelayan</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Buku Laut">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* App satu lajur untuk ibu jari & cahaya matahari.
+   Token: neutral 90%+, satu aksen (emas pelampung), navy hanya untuk kad untung. */
+:root{
+  --bg:#F6F7F9; --surface:#FFFFFF; --ink:#0B1220; --muted:#526075; --faint:#8A96A8;
+  --line:rgb(15 23 42/.09); --line-strong:rgb(15 23 42/.16); --soft:#EEF1F5;
+  --navy:#0F1B33; --navy-ink:#F4F6FA; --navy-muted:#AEB9CC;
+  --buoy:#A15C07; --buoy-ink:#FFFFFF; --buoy-tint:#FBF1E2;
+  --bar:#3B4A60; --good:#157A3C; --bad:#C2271F; --bad-tint:#FDECEA;
+  --shadow:0 1px 2px rgb(15 23 42/.05),0 2px 8px -2px rgb(15 23 42/.06);
+  --r-sm:8px; --r-md:12px; --r-lg:16px;
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#060B16; --surface:#0E1626; --ink:#EEF2F8; --muted:#9AA7BB; --faint:#6B7890;
+  --line:rgb(226 232 240/.08); --line-strong:rgb(226 232 240/.16); --soft:#172235;
+  --navy:#13213D; --navy-ink:#F4F6FA; --navy-muted:#A9B5C9;
+  --buoy:#F0B43C; --buoy-ink:#1F1503; --buoy-tint:#2A2110;
+  --bar:#8796AE; --good:#5BD38A; --bad:#FF8A80; --bad-tint:#2B1517;
+  --shadow:0 1px 0 rgb(255 255 255/.03) inset,0 2px 10px -4px rgb(0 0 0/.6);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#060B16; --surface:#0E1626; --ink:#EEF2F8; --muted:#9AA7BB; --faint:#6B7890;
+  --line:rgb(226 232 240/.08); --line-strong:rgb(226 232 240/.16); --soft:#172235;
+  --navy:#13213D; --navy-ink:#F4F6FA; --navy-muted:#A9B5C9;
+  --buoy:#F0B43C; --buoy-ink:#1F1503; --buoy-tint:#2A2110;
+  --bar:#8796AE; --good:#5BD38A; --bad:#FF8A80; --bad-tint:#2B1517;
+  --shadow:0 1px 0 rgb(255 255 255/.03) inset,0 2px 10px -4px rgb(0 0 0/.6);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+[hidden]{display:none!important}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Header ---------- */
+header{max-width:720px;margin:0 auto;
+  padding:calc(18px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 4px max(16px,env(safe-area-inset-left,0px));
+  display:flex;align-items:center;gap:12px}
+.mark{flex:none;width:40px;height:40px;border-radius:var(--r-md);background:var(--navy);display:grid;place-items:center}
+.mark svg{width:24px;height:24px;stroke:var(--buoy);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+header .k{font-size:13px;color:var(--muted)}
+header h1{font-size:21px;font-weight:700;margin:0;letter-spacing:-.015em;line-height:1.2}
+
+main{padding-block:12px calc(104px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  max-width:720px;margin:0 auto}
+section{display:flex;flex-direction:column;gap:14px}
+h2{font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}
+.fields{display:flex;flex-direction:column;gap:12px}
+
+/* ---------- Cards ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;box-shadow:var(--shadow)}
+.card-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card-head .muted{font-size:13px}
+
+/* Kad untung — satu-satunya blok gelap; garis ombak sebagai tanda tangan */
+.hero{position:relative;overflow:hidden;background:var(--navy);color:var(--navy-ink);border-radius:var(--r-lg);padding:18px 18px 30px}
+.hero .lbl{font-size:14px;color:var(--navy-muted)}
+.hero .big{font-weight:700;letter-spacing:-.03em;font-size:clamp(34px,10vw,44px);line-height:1.05;margin-top:6px;font-variant-numeric:tabular-nums}
+.hero .big.neg{color:#FFB4AC}
+.hero .sub{margin-top:10px;font-size:14px;color:var(--navy-muted);font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:2px 14px}
+.hero .sub b{color:var(--navy-ink);font-weight:600}
+.hero .wave{position:absolute;left:0;right:0;bottom:0;width:100%;height:22px;color:var(--buoy);opacity:.9}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;box-shadow:var(--shadow)}
+.stat .lbl{font-size:13px;color:var(--muted)}
+.stat .v{font-weight:700;font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:2px}
+@media (min-width:560px){.stats{grid-template-columns:repeat(4,1fr)}}
+
+.pos{color:var(--good)} .neg{color:var(--bad)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.muted{color:var(--muted);font-size:14px}
+.tag{display:inline-block;font-size:12px;font-weight:500;background:var(--soft);color:var(--muted);padding:1px 8px;border-radius:99px;vertical-align:2px}
+.tag.acc{background:var(--buoy-tint);color:var(--buoy)}
+
+/* ---------- Bottom nav ---------- */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:color-mix(in srgb,var(--surface) 92%,transparent);
+  -webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);
+  border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);
+  padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+nav button{position:relative;background:none;border:0;padding:8px 2px 6px;font:600 12px var(--font);color:var(--muted);min-height:60px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:color .15s var(--ease)}
+nav button::before{content:"";position:absolute;top:6px;left:50%;width:48px;height:30px;margin-left:-24px;border-radius:99px;background:var(--buoy-tint);opacity:0;transform:scale(.7);transition:opacity .15s var(--ease),transform .2s var(--ease)}
+nav button svg{position:relative;width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-top:4px}
+nav button.on{color:var(--buoy)}
+nav button.on::before{opacity:1;transform:none}
+
+/* ---------- Form ---------- */
+label{display:block;font-size:14px;font-weight:600;margin-bottom:5px}
+input,select{width:100%;font:500 17px var(--font);padding:11px 12px;border:1px solid var(--line-strong);border-radius:var(--r-sm);background:var(--surface);color:var(--ink);min-height:48px;transition:border-color .15s}
+input::placeholder{color:var(--faint);font-weight:400}
+input:focus,select:focus{border-color:var(--buoy)}
+input:focus-visible,select:focus-visible,button:focus-visible,textarea:focus-visible{outline:3px solid color-mix(in srgb,var(--buoy) 45%,transparent);outline-offset:1px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+input,select{min-width:0}
+input[type=date],input[type=time]{padding-right:8px;font-size:16px}
+.check{display:flex;gap:10px;align-items:center;font-weight:500;margin:0}
+.check input{width:22px;min-height:22px;height:22px;accent-color:var(--buoy)}
+
+.btn{font:600 16px var(--font);border:0;border-radius:var(--r-sm);padding:13px 16px;min-height:50px;transition:background-color .15s,transform .12s var(--ease)}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--buoy);color:var(--buoy-ink);width:100%;box-shadow:0 1px 2px rgb(0 0 0/.12)}
+.btn.sec{background:var(--soft);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line-strong)}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid color-mix(in srgb,var(--bad) 55%,transparent)}
+.btn.sm{min-height:40px;padding:8px 12px;font-size:14px}
+.btn.wide{width:100%}
+.btn.danger.armed{background:var(--bad);color:#fff;border-color:var(--bad)}
+@media (hover:hover){.btn.sec:hover,.btn.ghost:hover{background:color-mix(in srgb,var(--soft) 70%,var(--line-strong))}.btn.pri:hover{filter:brightness(1.06)}.btn.danger:not(.armed):hover{background:var(--bad-tint)}}
+
+.catch{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr) minmax(0,.8fr) 44px;gap:6px;align-items:end;padding-bottom:10px;border-bottom:1px dashed var(--line-strong)}
+.catch:last-child{border-bottom:0;padding-bottom:0}
+.catch .own{grid-column:1/-1}
+.catch .x{background:none;border:0;color:var(--faint);font-size:24px;line-height:1;min-height:48px;width:44px;border-radius:var(--r-sm)}
+@media (hover:hover){.catch .x:hover{color:var(--bad);background:var(--bad-tint)}}
+@media (max-width:380px){.catch{grid-template-columns:1fr 1fr 44px}.catch .sp{grid-column:1/-1}}
+
+/* Ringkasan langsung + simpan: melekat di atas tab bawah */
+.dock{position:sticky;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:3;display:flex;flex-direction:column;gap:8px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:12px;box-shadow:0 -2px 16px -6px rgb(15 23 42/.18),var(--shadow)}
+.sum{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted)}
+.sum .tot{font-size:22px;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.sum .parts{display:flex;flex-direction:column;gap:0;line-height:1.35}
+
+/* ---------- List ---------- */
+.trip{display:flex;flex-direction:column;gap:6px;padding:14px 0;border-bottom:1px solid var(--line)}
+.trip:last-child{border-bottom:0;padding-bottom:2px}
+.trip .p{font-weight:700;font-size:19px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.trip .acts{display:flex;gap:8px}
+.empty{padding:20px 4px;text-align:center;color:var(--muted);font-size:15px}
+
+/* ---------- Bars ---------- */
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar{display:grid;grid-template-columns:minmax(0,96px) 1fr auto;gap:10px;align-items:center;font-size:14px;font-variant-numeric:tabular-nums}
+.bar>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.bar.cur>span:first-child{color:var(--ink);font-weight:600}
+.bar .t{height:12px;background:var(--soft);border-radius:99px;overflow:hidden}
+.bar .f{height:100%;background:var(--bar);border-radius:99px;opacity:.85}
+.bar.cur .f{background:var(--buoy);opacity:1}
+.bar .f.neg{background:var(--bad);opacity:.85}
+.bar>span:last-child{text-align:right;min-width:72px}
+
+textarea{width:100%;min-height:110px;font:13px ui-monospace,SFMono-Regular,Menlo,monospace;padding:10px;border:1px solid var(--line-strong);border-radius:var(--r-sm);background:var(--bg);color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:var(--r-md);font-weight:600;font-size:15px;z-index:9;box-shadow:0 8px 24px -8px rgb(0 0 0/.4);max-width:calc(100% - 32px);text-align:center;
+  animation:toastIn .2s var(--ease)}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,8px)}}
+.banner{background:var(--buoy-tint);border-radius:var(--r-md);padding:10px 12px;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.note{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);padding:2px 4px}
+.note svg{flex:none;width:18px;height:18px;margin-top:1px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+footer{text-align:center;font-size:12px;color:var(--faint);padding-top:8px}
+@media (prefers-reduced-motion:reduce){*,*::before{transition:none!important;animation:none!important}}
+
+/* ---------- Laporan (kertas) ---------- */
+.rep-ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.paper{background:#fff;color:#111;border:1px solid var(--line);border-radius:var(--r-sm);padding:22px 18px;display:flex;flex-direction:column;gap:18px;font-size:14px;box-shadow:var(--shadow)}
+.paper h3{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
+.paper h4{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px;color:#444}
+.paper .meta{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:13px;color:#333}
+.paper .kpi{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #bbb}
+.paper .kpi div{padding:8px 10px;border-right:1px solid #bbb;border-bottom:1px solid #bbb}
+.paper .kpi div:nth-child(3n){border-right:0}
+.paper .kpi div:nth-last-child(-n+3){border-bottom:0}
+.paper .kpi b{display:block;font-size:16px;font-variant-numeric:tabular-nums}
+.paper .kpi span{font-size:12px;color:#555}
+@media (max-width:520px){.paper .kpi{grid-template-columns:1fr 1fr}.paper .kpi div{border-right:1px solid #bbb;border-bottom:1px solid #bbb}.paper .kpi div:nth-child(2n){border-right:0}.paper .kpi div:nth-last-child(-n+2){border-bottom:0}}
+.tw{overflow-x:auto}
+.paper table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}
+.paper th,.paper td{border-bottom:1px solid #ddd;padding:6px;text-align:right;white-space:nowrap}
+.paper th:first-child,.paper td:first-child,.paper td.l{text-align:left}
+.paper th{font-size:12px;font-weight:600;color:#555;border-bottom:1.5px solid #111}
+.paper tfoot td{font-weight:700;border-top:1.5px solid #111;border-bottom:0}
+.paper .r{color:#b91c1c}
+.paper .sign{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px;font-size:12px}
+.paper .sign div{border-top:1px solid #111;padding-top:4px}
+.paper .foot{font-size:11px;color:#666;border-top:1px solid #ddd;padding-top:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff!important}
+  header,nav,.no-print,.toast{display:none!important}
+  main{padding:0!important;max-width:none}
+  .paper{border:0;padding:0;font-size:12px;box-shadow:none}
+  .paper table{font-size:11px}
+  .paper tr,.paper .kpi{break-inside:avoid}
+  .paper .tw{overflow:visible}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 16c2 0 2-1.5 4-1.5S8 16 10 16s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M2 20c2 0 2-1.5 4-1.5S8 20 10 20s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><path d="M12 3v8M8 11h8l-1.5 2.5h-5z"/></svg></div>
+  <div>
+    <div class="k" id="today">Buku Laut</div>
+    <h1>Buku Laut Nelayan</h1>
+  </div>
+</header>
+
+<main>
+  <!-- RINGKASAN -->
+  <section id="v-dash">
+    <div class="banner" id="sampleBanner" hidden>
+      <span>Ini <b>data contoh</b>. Simpan trip pertama anda dan contoh akan hilang.</span>
+      <button class="btn ghost sm" id="clearSample">Padam contoh</button>
+    </div>
+    <div class="hero">
+      <div class="lbl" id="mLabel">Untung bersih bulan ini</div>
+      <div class="big" id="mProfit">RM 0.00</div>
+      <div class="sub" id="mSub"></div>
+      <svg class="wave" viewBox="0 0 400 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 Q 25 6 50 14 T 100 14 T 150 14 T 200 14 T 250 14 T 300 14 T 350 14 T 400 14" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="lbl">Trip</div><div class="v" id="sTrips">0</div></div>
+      <div class="stat"><div class="lbl">Hasil</div><div class="v" id="sKg">0 kg</div></div>
+      <div class="stat"><div class="lbl">Jualan</div><div class="v" id="sSales">RM 0</div></div>
+      <div class="stat"><div class="lbl">Jumlah kos</div><div class="v" id="sCost">RM 0</div></div>
+    </div>
+    <button class="btn ghost wide" id="openReport">Lihat laporan &amp; cetak</button>
+    <div class="card fields">
+      <div class="card-head"><h2>Untung 6 bulan</h2><span class="muted">selepas semua kos</span></div>
+      <div class="bars" id="monthBars"></div>
+    </div>
+    <div class="card fields">
+      <div class="card-head"><h2>Ikan paling untung</h2><span class="muted">bulan ini</span></div>
+      <div class="bars" id="fishBars"></div>
+    </div>
+    <div class="card fields">
+      <div class="card-head"><h2>Ke mana duit pergi</h2><span class="muted">kos bulan ini</span></div>
+      <div class="bars" id="costBars"></div>
+    </div>
+  </section>
+
+  <!-- TAMBAH TRIP -->
+  <section id="v-add" hidden>
+    <div class="card fields">
+      <h2 id="formTitle">Trip baru</h2>
+      <div class="grid2">
+        <div><label for="fDate">Tarikh</label><input type="date" id="fDate"></div>
+        <div><label for="fSpot">Lokasi / unjam</label><input id="fSpot" placeholder="cth: Pulau Besar"></div>
+        <div><label for="fOut">Jam keluar</label><input type="time" id="fOut"></div>
+        <div><label for="fIn">Jam balik</label><input type="time" id="fIn"></div>
+      </div>
+      <div><label for="fSea">Keadaan laut</label>
+        <select id="fSea"><option>Tenang</option><option>Sederhana</option><option>Bergelora</option></select></div>
+    </div>
+
+    <div class="card fields">
+      <div class="row"><h2>Hasil tangkapan</h2><button class="btn sec sm" id="addCatch">+ Ikan</button></div>
+      <div class="muted">Jenis, berat (kg) dan harga sekilo (RM). Ikan tiada dalam senarai? Pilih “Lain-lain” dan taip sendiri.</div>
+      <div class="fields" id="catchRows"></div>
+      <div><label for="fBuyer">Dijual kepada</label><input id="fBuyer" placeholder="cth: Peraih / LKIM / pasar"></div>
+    </div>
+
+    <div class="card fields">
+      <div><label for="fModal">Modal trip (RM)</label><input type="number" inputmode="decimal" min="0" step="0.01" id="fModal" placeholder="0.00">
+      <div class="muted" style="margin-top:6px">Duit yang dikeluarkan untuk trip ini. Ia tidak ditolak lagi dari untung, cuma untuk lihat pulangan modal.</div></div>
+    </div>
+
+    <div class="card fields">
+      <h2>Kos trip (RM)</h2>
+      <div class="grid2">
+        <div><label for="cFuel">Minyak</label><input type="number" inputmode="decimal" min="0" step="0.01" id="cFuel" placeholder="0.00"></div>
+        <div><label for="cIce">Ais</label><input type="number" inputmode="decimal" min="0" step="0.01" id="cIce" placeholder="0.00"></div>
+        <div><label for="cBait">Umpan</label><input type="number" inputmode="decimal" min="0" step="0.01" id="cBait" placeholder="0.00"></div>
+        <div><label for="cFood">Makanan</label><input type="number" inputmode="decimal" min="0" step="0.01" id="cFood" placeholder="0.00"></div>
+        <div><label for="cCrew">Upah awak-awak</label><input type="number" inputmode="decimal" min="0" step="0.01" id="cCrew" placeholder="0.00"></div>
+        <div><label for="cOther">Lain-lain</label><input type="number" inputmode="decimal" min="0" step="0.01" id="cOther" placeholder="0.00"></div>
+      </div>
+    </div>
+
+    <div class="dock">
+      <div class="sum" id="liveSum" aria-live="polite"></div>
+      <button class="btn pri" id="saveTrip">Simpan trip</button>
+      <button class="btn sec" id="cancelEdit" hidden>Batal sunting</button>
+    </div>
+  </section>
+
+  <!-- REKOD -->
+  <section id="v-list" hidden>
+    <div class="card">
+      <div class="row"><h2>Rekod trip</h2>
+        <select id="filterMonth" style="width:auto;min-height:40px;padding:6px 10px;font-size:15px" aria-label="Tapis bulan"></select></div>
+      <div id="tripList"></div>
+    </div>
+  </section>
+
+  <!-- LAPORAN -->
+  <section id="v-report" hidden>
+    <div class="card fields no-print">
+      <div class="row"><h2>Laporan</h2><button class="btn ghost sm" id="repBack">Kembali</button></div>
+      <div class="rep-ctrl">
+        <div><label for="rType">Jenis</label><select id="rType"><option value="d">Harian</option><option value="m" selected>Bulanan</option><option value="q">Suku tahun</option><option value="y">Tahunan</option></select></div>
+        <div id="rDayW" hidden><label for="rDay">Tarikh</label><input type="date" id="rDay"></div>
+        <div id="rYearW"><label for="rYear">Tahun</label><select id="rYear"></select></div>
+        <div id="rMonthW"><label for="rMonth">Bulan</label><select id="rMonth"></select></div>
+        <div id="rQW" hidden><label for="rQ">Suku</label><select id="rQ"><option value="1">Suku 1 (Jan–Mac)</option><option value="2">Suku 2 (Apr–Jun)</option><option value="3">Suku 3 (Jul–Sep)</option><option value="4">Suku 4 (Okt–Dis)</option></select></div>
+      </div>
+      <button class="btn pri" id="doPrint">Cetak / simpan PDF</button>
+      <p class="muted" style="margin:0" id="printHint">Butang cetak berfungsi bila fail dibuka dalam Chrome atau pelayar telefon. Pilih “Simpan sebagai PDF” untuk dapatkan fail PDF.</p>
+    </div>
+    <div class="paper" id="paper"></div>
+  </section>
+
+  <!-- OVERHEAD -->
+  <section id="v-over" hidden>
+    <div class="card fields">
+      <h2 id="oTitle">Tambah kos overhead</h2>
+      <p class="muted" style="margin:0">Kos tetap yang bukan untuk satu trip sahaja, contohnya servis enjin, ansuran bot, lesen atau minyak pukal. Kos ini ditolak daripada untung bulanan.</p>
+      <div class="grid2">
+        <div><label for="oDate">Tarikh</label><input type="date" id="oDate"></div>
+        <div><label for="oAmt">Jumlah (RM)</label><input type="number" inputmode="decimal" min="0" step="0.01" id="oAmt" placeholder="0.00"></div>
+      </div>
+      <div><label for="oCat">Kategori</label>
+        <select id="oCat"><option>Minyak pukal / simpanan</option><option>Servis enjin</option><option>Baiki bot</option><option>Pukat &amp; peralatan</option><option>Lesen &amp; permit</option><option>Insurans</option><option>Ansuran bot / enjin</option><option>Sewa jeti / parkir bot</option><option>Lain-lain</option></select></div>
+      <div><label for="oNote">Keterangan</label><input id="oNote" placeholder="cth: Tukar minyak hitam enjin 40hp"></div>
+      <label class="check"><input type="checkbox" id="oMonthly"> Bayaran bulanan berulang (cth: ansuran)</label>
+      <button class="btn pri" id="saveOver">Simpan overhead</button>
+      <button class="btn sec" id="cancelOver" hidden>Batal sunting</button>
+    </div>
+    <div class="note"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg><span>Jika minyak sudah direkod dalam trip, jangan rekod sekali lagi di sini.</span></div>
+    <div class="card">
+      <div class="row"><h2>Rekod overhead</h2><span class="muted num" id="oTotal"></span></div>
+      <div id="overList"></div>
+    </div>
+  </section>
+
+  <!-- TETAPAN -->
+  <section id="v-set" hidden>
+    <div class="card fields">
+      <h2>Maklumat untuk laporan</h2>
+      <div><label for="pName">Nama pemilik</label><input id="pName" autocomplete="name" placeholder="cth: Abu Hanifah bin Rozali"></div>
+      <div class="grid2">
+        <div><label for="pBoat">Nama / no. vesel</label><input id="pBoat" placeholder="cth: MLK 1234"></div>
+        <div><label for="pJeti">Jeti / pangkalan</label><input id="pJeti" placeholder="cth: Jeti Umbai"></div>
+      </div>
+      <button class="btn sec" id="saveProfile">Simpan maklumat</button>
+    </div>
+    <div class="card fields">
+      <h2>Backup data</h2>
+      <p class="muted" style="margin:0">Data disimpan dalam telefon ini sahaja. Salin kod backup dan simpan di WhatsApp atau nota, supaya tak hilang jika tukar telefon.</p>
+      <button class="btn sec" id="copyBackup">Salin kod backup</button>
+      <textarea id="backupText" aria-label="Kod backup" placeholder="Tampal kod backup di sini untuk pulihkan data"></textarea>
+      <button class="btn ghost" id="restoreBackup">Pulihkan dari kod</button>
+    </div>
+    <div class="card fields">
+      <h2>Padam semua data</h2><p class="muted" style="margin:0">Semua trip dan overhead akan dipadam. Maklumat pemilik kekal.</p>
+      <button class="btn danger" id="wipe">Padam semua data</button>
+    </div>
+    <footer>Hak cipta terpelihara Abu Hanifah bin Rozali</footer>
+  </section>
+</main>
+
+<nav aria-label="Menu utama">
+  <button data-v="dash" class="on" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Ringkasan</button>
+  <button data-v="add"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Trip</button>
+  <button data-v="list"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Rekod</button>
+  <button data-v="over"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>Overhead</button>
+  <button data-v="set"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Tetapan</button>
+</nav>
+
+<script>
+const KEY='bukuLautNelayan.v1';
+const BLN=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
+const BLN_P=['Januari','Februari','Mac','April','Mei','Jun','Julai','Ogos','September','Oktober','November','Disember'];
+const HARI=['Ahad','Isnin','Selasa','Rabu','Khamis','Jumaat','Sabtu'];
+const COSTS=[['fuel','Minyak'],['ice','Ais'],['bait','Umpan'],['food','Makanan'],['crew','Awak-awak'],['other','Lain-lain']];
+const $=id=>document.getElementById(id);
+const rm=n=>'RM '+(+n||0).toLocaleString('ms-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
+const rm0=n=>'RM '+Math.round(+n||0).toLocaleString('ms-MY');
+const pad=n=>String(n).padStart(2,'0');
+// Tarikh ikut waktu tempatan (bukan UTC) supaya tak lari sehari sebelum 8 pagi
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const ymOf=(y,m)=>y+'-'+pad(m+1);
+const thisYM=()=>ymd(new Date()).slice(0,7);
+const fmtDate=s=>{const d=new Date(s+'T00:00');return d.getDate()+' '+BLN[d.getMonth()]+' '+d.getFullYear()};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let state={trips:[],over:[],profile:{},sample:false};
+let editId=null,oEditId=null;
+
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));
+    if(s&&Array.isArray(s.trips)){state={trips:s.trips,over:Array.isArray(s.over)?s.over:[],profile:s.profile||{},sample:!!s.sample};return}}catch(e){}
+  state={trips:makeSample(),over:makeSampleOver(),profile:{},sample:true};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){toast('Gagal simpan. Memori telefon mungkin penuh.')}}
+function clearSampleIfAny(){if(state.sample){state.trips=[];state.over=[];state.sample=false}}
+const sales=t=>t.catch.reduce((a,c)=>a+(+c.kg||0)*(+c.price||0),0);
+const cost=t=>COSTS.reduce((a,[k])=>a+(+t.cost[k]||0),0);
+const modal=t=>+t.modal||0;
+const kg=t=>t.catch.reduce((a,c)=>a+(+c.kg||0),0);
+
+function makeSample(){
+  const fish=[['Kembung',9],['Selar',7],['Tenggiri',26],['Bawal',22],['Sotong',18],['Udang',30]];
+  const out=[];const now=new Date();let seed=7;const r=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+  for(let m=5;m>=0;m--){const n=6+Math.floor(r()*5);for(let i=0;i<n;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-m,1+Math.floor(r()*(m===0?Math.max(1,now.getDate()-1):27)));
+    const c=[];const k=2+Math.floor(r()*2);for(let j=0;j<k;j++){const f=fish[Math.floor(r()*fish.length)];if(c.find(x=>x.name===f[0]))continue;c.push({name:f[0],kg:+(3+r()*18).toFixed(1),price:+(f[1]*(0.9+r()*0.25)).toFixed(2)})}
+    const cs={fuel:+(70+r()*50).toFixed(2),ice:15,bait:+(10+r()*20).toFixed(2),food:12,crew:+(40+r()*40).toFixed(0),other:0};
+    out.push({id:'s'+m+'_'+i,date:ymd(d),modal:Math.ceil((cs.fuel+cs.ice+cs.bait+cs.food+cs.crew)/50)*50,spot:['Pulau Besar','Unjam 3','Tanjung Kling','Pulau Undan'][Math.floor(r()*4)],out:'05:30',in:'13:00',sea:'Tenang',buyer:'Peraih',catch:c,cost:cs})}}
+  return out;
+}
+function makeSampleOver(){const n=new Date();const d=(m,day)=>ymd(new Date(n.getFullYear(),n.getMonth()-m,day));
+  return [{id:'so1',date:d(5,5),cat:'Ansuran bot / enjin',note:'Ansuran enjin sangkut',amt:350,monthly:true},
+  {id:'so2',date:d(3,12),cat:'Servis enjin',note:'Tukar minyak hitam & plag',amt:180,monthly:false},
+  {id:'so3',date:d(1,8),cat:'Pukat & peralatan',note:'Jahit pukat koyak',amt:120,monthly:false},
+  {id:'so4',date:d(0,1),cat:'Minyak pukal / simpanan',note:'Minyak 2 tong simpanan',amt:220,monthly:false}];}
+// overhead untuk bulan ym (termasuk bayaran bulanan berulang)
+const overFor=ym=>state.over.filter(o=>o.monthly?o.date.slice(0,7)<=ym:o.date.startsWith(ym));
+const overSum=ym=>overFor(ym).reduce((a,o)=>a+(+o.amt||0),0);
+
+// Butang padam dua kali tekan (elak tersalah tekan)
+function armOrRun(btn,run,armedText,idleText){
+  if(btn.dataset.sure){run();return}
+  btn.dataset.sure=1;btn.classList.add('armed');btn.textContent=armedText;
+  setTimeout(()=>{if(btn.isConnected&&btn.dataset.sure){delete btn.dataset.sure;btn.classList.remove('armed');btn.textContent=idleText}},3000);
+}
+
+// ---------- RINGKASAN ----------
+function bars(el,items,fmt){
+  const max=Math.max(1,...items.map(i=>Math.abs(i.v)));
+  el.innerHTML=items.length?items.map(i=>`<div class="bar${i.cur?' cur':''}"><span title="${esc(i.l)}">${esc(i.l)}</span><div class="t"><div class="f ${i.v<0?'neg':''}" style="width:${Math.max(2,Math.abs(i.v)/max*100)}%"></div></div><span class="${i.v<0?'neg':''}">${fmt(i.v)}</span></div>`).join(''):'<div class="muted">Tiada data lagi bulan ini.</div>';
+}
+function renderDash(){
+  const now=new Date(),ym=thisYM();
+  const mt=state.trips.filter(t=>t.date.startsWith(ym));
+  const S=mt.reduce((a,t)=>a+sales(t),0),C=mt.reduce((a,t)=>a+cost(t),0),O=overSum(ym),P=S-C-O,M=mt.reduce((a,t)=>a+modal(t),0);
+  $('mLabel').textContent='Untung bersih '+BLN_P[now.getMonth()]+' '+now.getFullYear();
+  $('mProfit').textContent=rm(P);$('mProfit').className='big'+(P<0?' neg':'');
+  $('mSub').innerHTML=`<span>Jualan <b>${rm0(S)}</b></span><span>Kos trip <b>${rm0(C)}</b></span><span>Overhead <b>${rm0(O)}</b></span>${M>0?`<span>Modal <b>${rm0(M)}</b> · pulangan <b>${roi(P,M)}</b></span>`:''}`;
+  $('sTrips').textContent=mt.length;$('sKg').textContent=mt.reduce((a,t)=>a+kg(t),0).toFixed(1)+' kg';
+  $('sSales').textContent=rm0(S);$('sCost').textContent=rm0(C+O);
+  const months=[];for(let m=5;m>=0;m--){const d=new Date(now.getFullYear(),now.getMonth()-m,1);const k=ymOf(d.getFullYear(),d.getMonth());
+    const ts=state.trips.filter(t=>t.date.startsWith(k));months.push({l:BLN[d.getMonth()]+' '+String(d.getFullYear()).slice(2),v:ts.reduce((a,t)=>a+sales(t)-cost(t),0)-overSum(k),cur:m===0})}
+  bars($('monthBars'),months,rm0);
+  const f={};mt.forEach(t=>t.catch.forEach(c=>{f[c.name]=(f[c.name]||0)+(+c.kg||0)*(+c.price||0)}));
+  bars($('fishBars'),Object.entries(f).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([l,v],i)=>({l,v,cur:i===0})),rm0);
+  const oc={};overFor(ym).forEach(o=>{oc[o.cat]=(oc[o.cat]||0)+(+o.amt||0)});
+  bars($('costBars'),[...COSTS.map(([k,l])=>({l,v:mt.reduce((a,t)=>a+(+t.cost[k]||0),0)})),...Object.entries(oc).map(([l,v])=>({l:l.split(' /')[0].split(' &')[0],v}))].filter(i=>i.v>0).sort((a,b)=>b.v-a.v),rm0);
+  $('sampleBanner').hidden=!state.sample;
+}
+
+// ---------- BORANG TRIP ----------
+const FISH=['Kembung','Selar','Tenggiri','Bawal','Senangin','Kerapu','Siakap','Udang','Sotong','Ketam','Jenahak','Gelama'];
+const LAIN='__lain';
+// senarai asas + nama yang pernah ditaip sendiri
+function fishNames(){const set=new Set(FISH);state.trips.forEach(t=>t.catch.forEach(c=>{if(c.name)set.add(c.name)}));return [...set]}
+function catchRow(c={}){
+  const d=document.createElement('div');d.className='catch';
+  const names=fishNames();const has=!c.name||names.includes(c.name);
+  d.innerHTML=`<div class="sp"><select class="cs" aria-label="Jenis ikan"><option value="">Pilih ikan</option>${names.map(n=>`<option${n===c.name?' selected':''}>${esc(n)}</option>`).join('')}<option value="${LAIN}"${has?'':' selected'}>+ Lain-lain (taip sendiri)</option></select></div>
+  <div><input type="number" inputmode="decimal" min="0" step="0.1" placeholder="kg" class="ck" aria-label="Berat kg" value="${esc(c.kg??'')}"></div>
+  <div><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="RM/kg" class="cp" aria-label="Harga sekilo" value="${esc(c.price??'')}"></div>
+  <button type="button" class="x" aria-label="Buang baris ikan">×</button>
+  <div class="own" ${has?'hidden':''}><input class="cn" placeholder="Taip nama ikan, cth: Pari" aria-label="Nama ikan sendiri" value="${has?'':esc(c.name)}"></div>`;
+  const sel=d.querySelector('.cs'),own=d.querySelector('.own');
+  sel.onchange=()=>{own.hidden=sel.value!==LAIN;if(!own.hidden)own.querySelector('input').focus();liveSum()};
+  d.querySelector('.x').onclick=()=>{d.remove();if(!$('catchRows').children.length)catchRow();liveSum()};
+  d.querySelectorAll('input').forEach(i=>i.oninput=liveSum);
+  $('catchRows').appendChild(d);
+}
+function readForm(){
+  const cat=[...document.querySelectorAll('#catchRows .catch')].map(r=>({name:(r.querySelector('.cs').value===LAIN?r.querySelector('.cn').value:r.querySelector('.cs').value).trim(),kg:+r.querySelector('.ck').value||0,price:+r.querySelector('.cp').value||0})).filter(c=>c.name||c.kg||c.price);
+  const cost={};COSTS.forEach(([k])=>cost[k]=Math.max(0,+$('c'+k[0].toUpperCase()+k.slice(1)).value||0));
+  return {date:$('fDate').value,spot:$('fSpot').value.trim(),out:$('fOut').value,in:$('fIn').value,sea:$('fSea').value,buyer:$('fBuyer').value.trim(),modal:Math.max(0,+$('fModal').value||0),catch:cat,cost};
+}
+const roi=(p,m)=>(p/m*100).toLocaleString('ms-MY',{maximumFractionDigits:0})+'%';
+function liveSum(){const t=readForm();const S=sales(t),C=cost(t),P=S-C,M=modal(t);
+  $('liveSum').innerHTML=`<div class="parts"><span>Jualan ${rm(S)}</span><span>Kos ${rm(C)}</span>${M>0?`<span>Pulangan modal ${roi(P,M)}</span>`:''}</div><span class="tot ${P<0?'neg':'pos'}">${rm(P)}</span>`}
+function resetForm(t){
+  editId=t?t.id:null;$('formTitle').textContent=t?'Sunting trip':'Trip baru';$('cancelEdit').hidden=!t;$('saveTrip').textContent=t?'Simpan perubahan':'Simpan trip';
+  $('fDate').value=t?t.date:ymd(new Date());$('fSpot').value=t?.spot||'';$('fOut').value=t?.out||'';$('fIn').value=t?.in||'';$('fSea').value=t?.sea||'Tenang';$('fBuyer').value=t?.buyer||'';$('fModal').value=t&&t.modal?t.modal:'';
+  COSTS.forEach(([k])=>$('c'+k[0].toUpperCase()+k.slice(1)).value=t?(t.cost[k]||''):'');
+  $('catchRows').innerHTML='';(t&&t.catch.length?t.catch:[{}]).forEach(catchRow);liveSum();
+}
+$('addCatch').onclick=()=>{catchRow();liveSum();const r=$('catchRows').lastElementChild;r&&r.querySelector('select').focus()};
+document.querySelectorAll('#v-add input[id^=c],#fModal').forEach(i=>i.oninput=liveSum);
+$('saveTrip').onclick=()=>{
+  const t=readForm();
+  if(!t.date){toast('Isi tarikh dahulu');$('fDate').focus();return}
+  if(!t.catch.length){toast('Tambah sekurang-kurangnya satu ikan');return}
+  if(t.catch.some(c=>!c.name)){toast('Pilih jenis ikan untuk setiap baris');return}
+  if(t.catch.some(c=>c.kg<=0)){toast('Isi berat (kg) untuk setiap ikan');return}
+  const wasEdit=!!editId;
+  clearSampleIfAny();
+  if(editId){const i=state.trips.findIndex(x=>x.id===editId);if(i>-1)state.trips[i]={...t,id:editId}}
+  else state.trips.push({...t,id:Date.now().toString(36)});
+  save();toast(wasEdit?'Trip dikemas kini':'Trip disimpan');resetForm();show('dash');
+};
+$('cancelEdit').onclick=()=>{resetForm();show('list')};
+
+// ---------- REKOD ----------
+function renderList(){
+  const sel=$('filterMonth');const cur=sel.value;
+  const ms=[...new Set(state.trips.map(t=>t.date.slice(0,7)))].sort().reverse();
+  sel.innerHTML='<option value="">Semua bulan</option>'+ms.map(m=>`<option value="${m}">${BLN[+m.slice(5)-1]} ${m.slice(0,4)}</option>`).join('');
+  sel.value=ms.includes(cur)?cur:'';
+  const list=state.trips.filter(t=>!sel.value||t.date.startsWith(sel.value)).sort((a,b)=>b.date.localeCompare(a.date));
+  $('tripList').innerHTML=list.length?list.map(t=>{const P=sales(t)-cost(t);
+    return `<div class="trip"><div class="row"><div><b>${fmtDate(t.date)}</b> ${state.sample?'<span class="tag">Contoh</span>':''}<div class="muted num">${esc(t.spot||'—')} · ${kg(t).toFixed(1)} kg · ${esc(t.out||'--')}–${esc(t.in||'--')}</div></div>
+    <div class="p ${P<0?'neg':'pos'}">${rm0(P)}</div></div>
+    <div class="muted">${t.catch.map(c=>esc(c.name)+' '+c.kg+' kg').join(', ')}</div>
+    ${modal(t)>0?`<div class="muted num">Modal ${rm0(modal(t))} · pulangan ${roi(P,modal(t))}</div>`:''}
+    <div class="acts"><button class="btn sec sm" data-edit="${esc(t.id)}">Sunting</button><button class="btn danger sm" data-del="${esc(t.id)}">Padam</button></div></div>`}).join('')
+    :'<div class="empty">Belum ada trip.<br>Tekan <b>Trip</b> di bawah untuk mula merekod.</div>';
+}
+$('filterMonth').onchange=renderList;
+$('tripList').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.edit){resetForm(state.trips.find(t=>t.id===b.dataset.edit));show('add')}
+  if(b.dataset.del)armOrRun(b,()=>{state.trips=state.trips.filter(t=>t.id!==b.dataset.del);save();renderList();toast('Trip dipadam')},'Tekan lagi untuk padam','Padam');
+};
+
+// ---------- TETAPAN ----------
+$('copyBackup').onclick=async()=>{const s=JSON.stringify(state);$('backupText').value=s;
+  try{await navigator.clipboard.writeText(s);toast('Kod backup disalin')}catch(e){$('backupText').select();toast('Kod dipaparkan. Salin secara manual.')}};
+$('restoreBackup').onclick=()=>{
+  let s;try{s=JSON.parse($('backupText').value);if(!s||!Array.isArray(s.trips))throw 0}catch(e){toast('Kod backup tidak sah. Semak dan tampal semula.');return}
+  armOrRun($('restoreBackup'),()=>{state={trips:s.trips,over:Array.isArray(s.over)?s.over:[],profile:s.profile||{},sample:false};save();toast(s.trips.length+' trip dipulihkan');show('dash')},'Data sekarang akan diganti. Tekan lagi','Pulihkan dari kod');
+};
+$('wipe').onclick=e=>armOrRun(e.currentTarget,()=>{state={trips:[],over:[],profile:state.profile||{},sample:false};save();toast('Semua data dipadam');show('dash')},'Pasti? Tekan lagi untuk padam semua','Padam semua data');
+$('clearSample').onclick=()=>{state={trips:[],over:[],profile:state.profile||{},sample:false};save();renderDash();toast('Data contoh dipadam')};
+function loadProfile(){const p=state.profile||{};$('pName').value=p.name||'';$('pBoat').value=p.boat||'';$('pJeti').value=p.jeti||''}
+$('saveProfile').onclick=()=>{state.profile={name:$('pName').value.trim(),boat:$('pBoat').value.trim(),jeti:$('pJeti').value.trim()};save();toast('Maklumat disimpan')};
+
+// ---------- OVERHEAD ----------
+function resetOver(o){oEditId=o?o.id:null;$('oTitle').textContent=o?'Sunting overhead':'Tambah kos overhead';$('cancelOver').hidden=!o;$('saveOver').textContent=o?'Simpan perubahan':'Simpan overhead';
+  $('oDate').value=o?o.date:ymd(new Date());$('oAmt').value=o?o.amt:'';$('oCat').value=o?o.cat:'Minyak pukal / simpanan';$('oNote').value=o?.note||'';$('oMonthly').checked=!!o?.monthly}
+function renderOver(){
+  $('oTotal').textContent='Bulan ini: '+rm0(overSum(thisYM()));
+  const list=[...state.over].sort((a,b)=>b.date.localeCompare(a.date));
+  $('overList').innerHTML=list.length?list.map(o=>`<div class="trip"><div class="row"><div><b>${esc(o.cat)}</b> ${o.monthly?'<span class="tag acc">Bulanan</span>':''} ${state.sample?'<span class="tag">Contoh</span>':''}<div class="muted">${fmtDate(o.date)} · ${esc(o.note||'—')}</div></div>
+    <div class="p neg">${rm0(o.amt)}</div></div>
+    <div class="acts"><button class="btn sec sm" data-oedit="${esc(o.id)}">Sunting</button><button class="btn danger sm" data-odel="${esc(o.id)}">Padam</button></div></div>`).join('')
+    :'<div class="empty">Tiada kos overhead lagi.</div>';
+}
+$('saveOver').onclick=()=>{const o={date:$('oDate').value,amt:+$('oAmt').value||0,cat:$('oCat').value,note:$('oNote').value.trim(),monthly:$('oMonthly').checked};
+  if(!o.date){toast('Isi tarikh dahulu');return} if(o.amt<=0){toast('Isi jumlah kos');$('oAmt').focus();return}
+  const wasEdit=!!oEditId;clearSampleIfAny();
+  if(oEditId){const i=state.over.findIndex(x=>x.id===oEditId);if(i>-1)state.over[i]={...o,id:oEditId}} else state.over.push({...o,id:'o'+Date.now().toString(36)});
+  save();toast(wasEdit?'Overhead dikemas kini':'Overhead disimpan');resetOver();renderOver()};
+$('cancelOver').onclick=()=>resetOver();
+$('overList').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.oedit){resetOver(state.over.find(o=>o.id===b.dataset.oedit));window.scrollTo({top:0,behavior:'smooth'})}
+  if(b.dataset.odel)armOrRun(b,()=>{state.over=state.over.filter(o=>o.id!==b.dataset.odel);save();renderOver();toast('Overhead dipadam')},'Tekan lagi untuk padam','Padam')};
+
+// ---------- LAPORAN ----------
+function repMonths(){const t=$('rType').value,y=+$('rYear').value;
+  if(t==='m')return[{y,m:+$('rMonth').value}];
+  if(t==='q'){const q=+$('rQ').value;return[0,1,2].map(i=>({y,m:(q-1)*3+i}))}
+  return[...Array(12).keys()].map(m=>({y,m}))}
+function initReport(){
+  const now=new Date();const ys=new Set([now.getFullYear()]);state.trips.forEach(t=>ys.add(+t.date.slice(0,4)));state.over.forEach(o=>ys.add(+o.date.slice(0,4)));
+  const yv=$('rYear').value;$('rYear').innerHTML=[...ys].sort((a,b)=>b-a).map(y=>`<option>${y}</option>`).join('');$('rYear').value=yv||now.getFullYear();
+  if(!$('rMonth').options.length){$('rMonth').innerHTML=BLN_P.map((b,i)=>`<option value="${i}">${b}</option>`).join('');$('rMonth').value=now.getMonth();$('rQ').value=Math.floor(now.getMonth()/3)+1}
+  if(!$('rDay').value){const last=[...state.trips].sort((a,b)=>b.date.localeCompare(a.date))[0];$('rDay').value=last?last.date:ymd(now)}
+  renderReport()}
+function renderReport(){
+  const t=$('rType').value,daily=t==='d';
+  $('rMonthW').hidden=t!=='m';$('rQW').hidden=t!=='q';$('rYearW').hidden=daily;$('rDayW').hidden=!daily;
+  const n2=v=>(+v||0).toLocaleString('ms-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const pct=(p,m)=>m>0?(p/m*100).toLocaleString('ms-MY',{maximumFractionDigits:0})+'%':'—';
+  const neg=v=>v<0?' class="r"':'';const now=new Date();
+  let rows,label,title;
+  if(daily){
+    const day=$('rDay').value||ymd(now);const ts=state.trips.filter(x=>x.date===day);
+    rows=[{l:fmtDate(day),n:ts.length,kg:ts.reduce((a,x)=>a+kg(x),0),S:ts.reduce((a,x)=>a+sales(x),0),C:ts.reduce((a,x)=>a+cost(x),0),O:0,M:ts.reduce((a,x)=>a+modal(x),0),ts}];
+    rows[0].P=rows[0].S-rows[0].C;
+    const d=new Date(day+'T00:00');label=HARI[d.getDay()]+', '+d.getDate()+' '+BLN_P[d.getMonth()]+' '+d.getFullYear();title='Laporan Harian';
+  }else{
+    const ms=repMonths(),y=ms[0].y;const yms=ms.map(x=>ymOf(x.y,x.m));
+    label=t==='m'?BLN_P[ms[0].m]+' '+y:t==='q'?`Suku ${$('rQ').value} (${BLN_P[ms[0].m]} – ${BLN_P[ms[2].m]}) ${y}`:'Tahun '+y;
+    title=t==='m'?'Laporan Bulanan':t==='q'?'Laporan Suku Tahun':'Laporan Tahunan';
+    rows=yms.map((ym,i)=>{const ts=state.trips.filter(x=>x.date.startsWith(ym));const S=ts.reduce((a,x)=>a+sales(x),0),C=ts.reduce((a,x)=>a+cost(x),0),O=overSum(ym);
+      return{l:BLN_P[ms[i].m],ym,n:ts.length,kg:ts.reduce((a,x)=>a+kg(x),0),S,C,O,M:ts.reduce((a,x)=>a+modal(x),0),P:S-C-O,ts}});
+  }
+  const T=rows.reduce((a,r)=>({n:a.n+r.n,kg:a.kg+r.kg,S:a.S+r.S,C:a.C+r.C,O:a.O+r.O,M:a.M+r.M,P:a.P+r.P}),{n:0,kg:0,S:0,C:0,O:0,M:0,P:0});
+  const trips=rows.flatMap(r=>r.ts).sort((a,b)=>a.date.localeCompare(b.date)||String(a.out).localeCompare(String(b.out)));
+  const fish={};trips.forEach(x=>x.catch.forEach(c=>{const f=fish[c.name]||(fish[c.name]={kg:0,S:0});f.kg+=+c.kg||0;f.S+=(+c.kg||0)*(+c.price||0)}));
+  const costs=COSTS.map(([k,l])=>({l:'Trip: '+l,v:trips.reduce((a,x)=>a+(+x.cost[k]||0),0)}));
+  if(!daily){const oc={};rows.forEach(r=>overFor(r.ym).forEach(o=>{oc[o.cat]=(oc[o.cat]||0)+(+o.amt||0)}));
+    Object.entries(oc).forEach(([l,v])=>costs.push({l:'Overhead: '+l,v}))}
+  const cl=costs.filter(c=>c.v>0).sort((a,b)=>b.v-a.v);
+  const pf=state.profile||{};
+  let h=`<div><h3>${title}</h3><div style="font-size:15px;margin-top:2px">${esc(label)}</div></div>
+  <div class="meta"><span>Nama</span><b>${esc(pf.name||'—')}</b><span>Vesel</span><b>${esc(pf.boat||'—')}</b><span>Pangkalan</span><b>${esc(pf.jeti||'—')}</b></div>
+  ${state.sample?'<div style="font-size:12px;color:#b45309">Laporan ini menggunakan data contoh.</div>':''}
+  <div class="kpi"><div><span>Modal</span><b>RM ${n2(T.M)}</b></div><div><span>Jualan</span><b>RM ${n2(T.S)}</b></div><div><span>Jumlah kos</span><b>RM ${n2(T.C+T.O)}</b></div>
+  <div><span>${daily?'Untung trip':'Untung bersih'}</span><b${neg(T.P)}>RM ${n2(T.P)}</b></div><div><span>Pulangan modal</span><b${neg(T.P)}>${pct(T.P,T.M)}</b></div><div><span>Trip · hasil</span><b>${T.n} · ${T.kg.toFixed(1)} kg</b></div></div>
+  ${daily?'<div style="font-size:12px;color:#555">Laporan harian tidak termasuk kos overhead. Overhead dikira dalam laporan bulanan.</div>':''}`;
+  if(t==='q'||t==='y')h+=`<div><h4>Pecahan bulanan</h4><div class="tw"><table><thead><tr><th>Bulan</th><th>Trip</th><th>Hasil (kg)</th><th>Modal</th><th>Jualan</th><th>Kos trip</th><th>Overhead</th><th>Untung</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td>${r.l}</td><td>${r.n}</td><td>${r.kg.toFixed(1)}</td><td>${n2(r.M)}</td><td>${n2(r.S)}</td><td>${n2(r.C)}</td><td>${n2(r.O)}</td><td${neg(r.P)}>${n2(r.P)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>Jumlah</td><td>${T.n}</td><td>${T.kg.toFixed(1)}</td><td>${n2(T.M)}</td><td>${n2(T.S)}</td><td>${n2(T.C)}</td><td>${n2(T.O)}</td><td${neg(T.P)}>${n2(T.P)}</td></tr></tfoot></table></div></div>`;
+  const fl=Object.entries(fish).sort((a,b)=>b[1].S-a[1].S);
+  h+=`<div><h4>Hasil ikut jenis ikan</h4><div class="tw"><table><thead><tr><th>Jenis</th><th>Berat (kg)</th><th>Purata RM/kg</th><th>Jualan (RM)</th></tr></thead><tbody>
+    ${fl.length?fl.map(([n,f])=>`<tr><td>${esc(n)}</td><td>${f.kg.toFixed(1)}</td><td>${n2(f.kg?f.S/f.kg:0)}</td><td>${n2(f.S)}</td></tr>`).join(''):'<tr><td colspan="4">Tiada tangkapan direkod.</td></tr>'}</tbody>
+    <tfoot><tr><td>Jumlah</td><td>${T.kg.toFixed(1)}</td><td>${n2(T.kg?T.S/T.kg:0)}</td><td>${n2(T.S)}</td></tr></tfoot></table></div></div>`;
+  h+=`<div><h4>Pecahan kos</h4><div class="tw"><table><thead><tr><th>Perkara</th><th>Jumlah (RM)</th></tr></thead><tbody>
+    ${cl.length?cl.map(c=>`<tr><td>${esc(c.l)}</td><td>${n2(c.v)}</td></tr>`).join(''):'<tr><td colspan="2">Tiada kos direkod.</td></tr>'}</tbody>
+    <tfoot><tr><td>Jumlah kos</td><td>${n2(T.C+T.O)}</td></tr></tfoot></table></div></div>`;
+  if(t==='m'||daily)h+=`<div><h4>Senarai trip</h4><div class="tw"><table><thead><tr><th>${daily?'Masa':'Tarikh'}</th><th>Lokasi</th><th>Hasil (kg)</th><th>Modal</th><th>Jualan</th><th>Kos</th><th>Untung</th></tr></thead><tbody>
+    ${trips.length?trips.map(x=>{const d=new Date(x.date+'T00:00'),P=sales(x)-cost(x);return `<tr><td>${daily?esc((x.out||'--')+'–'+(x.in||'--')):d.getDate()+' '+BLN[d.getMonth()]}</td><td class="l">${esc(x.spot||'—')}</td><td>${kg(x).toFixed(1)}</td><td>${n2(modal(x))}</td><td>${n2(sales(x))}</td><td>${n2(cost(x))}</td><td${neg(P)}>${n2(P)}</td></tr>`}).join(''):'<tr><td colspan="7">Tiada trip.</td></tr>'}</tbody></table></div></div>`;
+  h+=`<div class="sign"><div>Disediakan oleh</div><div>Tarikh</div></div>
+  <div class="foot"><span>Buku Laut Nelayan · dijana ${now.getDate()} ${BLN_P[now.getMonth()]} ${now.getFullYear()}</span><span>Hak cipta terpelihara Abu Hanifah bin Rozali</span></div>`;
+  $('paper').innerHTML=h}
+['rType','rYear','rMonth','rQ','rDay'].forEach(id=>$(id).onchange=renderReport);
+$('openReport').onclick=()=>show('report');
+$('repBack').onclick=()=>show('dash');
+$('doPrint').onclick=()=>{try{window.print()}catch(e){} setTimeout(()=>toast('Jika tetingkap cetak tak muncul, buka fail dalam Chrome dahulu'),600)};
+
+// ---------- NAVIGASI ----------
+function show(v){['dash','add','list','over','set','report'].forEach(x=>$('v-'+x).hidden=x!==v);
+  const tab=v==='report'?'dash':v;
+  document.querySelectorAll('nav button').forEach(b=>{const on=b.dataset.v===tab;b.classList.toggle('on',on);on?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current')});
+  if(v==='dash')renderDash();if(v==='list')renderList();if(v==='over')renderOver();if(v==='report')initReport();if(v==='set')loadProfile();window.scrollTo(0,0)}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{if(b.dataset.v==='add'&&editId)resetForm();show(b.dataset.v)});
+let tt;function toast(m){document.querySelector('.toast')?.remove();const d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=m;document.body.appendChild(d);clearTimeout(tt);tt=setTimeout(()=>d.remove(),2600)}
+
+const n=new Date();
+$('today').textContent=HARI[n.getDay()]+', '+n.getDate()+' '+BLN_P[n.getMonth()]+' '+n.getFullYear();
+// Dalam paparan terbenam (cth: pautan Claude), tetingkap cetak disekat
+if(window.self!==window.top){$('doPrint').hidden=true;$('printHint').textContent='Cetak tidak tersedia dalam pautan ini. Untuk cetak atau simpan PDF, buka fail HTML dalam Chrome. Anda juga boleh tangkap skrin laporan.'}
+load();resetForm();resetOver();renderDash();
+// Simpan app dalam telefon supaya boleh buka tanpa internet
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+// Minta pelayar jangan padam data simpanan secara automatik
+try{navigator.storage?.persist?.()}catch(e){}
+</script>
+</body>
+</html>
