@@ -119,6 +119,12 @@ input:focus-visible,select:focus-visible,button:focus-visible,textarea:focus-vis
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 input,select{min-width:0}
 input[type=date],input[type=time]{padding-right:8px;font-size:16px}
+/* Tarikh dipapar sebagai hh/bb/tttt walaupun telefon guna format lain */
+.dwrap{position:relative}
+.dwrap input{color:transparent}
+.dwrap input::-webkit-datetime-edit{color:transparent}
+.dwrap .dshow{position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:17px;font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+.dwrap .dshow.empty{color:var(--faint);font-weight:400}
 .check{display:flex;gap:10px;align-items:center;font-weight:500;margin:0}
 .check input{width:22px;min-height:22px;height:22px;accent-color:var(--buoy)}
 
@@ -401,6 +407,13 @@ const fmtDate=s=>{const d=new Date(s+'T00:00');return d.getDate()+' '+BLN[d.getM
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 let state={trips:[],over:[],profile:{},sample:false};
+
+// ---------- TARIKH hh/bb/tttt ----------
+function syncDates(){document.querySelectorAll('.dwrap').forEach(w=>{const v=w.querySelector('input').value,s=w.querySelector('.dshow');
+  s.textContent=v?v.slice(8,10)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'hh/bb/tttt';s.classList.toggle('empty',!v)})}
+function setupDates(){document.querySelectorAll('input[type=date]').forEach(i=>{const w=document.createElement('div');w.className='dwrap';
+  i.parentNode.insertBefore(w,i);w.appendChild(i);const s=document.createElement('span');s.className='dshow';s.setAttribute('aria-hidden','true');w.appendChild(s);
+  i.addEventListener('input',syncDates);i.addEventListener('change',syncDates)});syncDates()}
 let editId=null,oEditId=null;
 
 function load(){
@@ -496,7 +509,7 @@ function resetForm(t){
   editId=t?t.id:null;$('formTitle').textContent=t?'Sunting trip':'Trip baru';$('cancelEdit').hidden=!t;$('saveTrip').textContent=t?'Simpan perubahan':'Simpan trip';
   $('fDate').value=t?t.date:ymd(new Date());$('fSpot').value=t?.spot||'';$('fOut').value=t?.out||'';$('fIn').value=t?.in||'';$('fSea').value=t?.sea||'Tenang';$('fBuyer').value=t?.buyer||'';$('fModal').value=t&&t.modal?t.modal:'';
   COSTS.forEach(([k])=>$('c'+k[0].toUpperCase()+k.slice(1)).value=t?(t.cost[k]||''):'');
-  $('catchRows').innerHTML='';(t&&t.catch.length?t.catch:[{}]).forEach(catchRow);liveSum();
+  $('catchRows').innerHTML='';(t&&t.catch.length?t.catch:[{}]).forEach(catchRow);liveSum();syncDates();
 }
 $('addCatch').onclick=()=>{catchRow();liveSum();const r=$('catchRows').lastElementChild;r&&r.querySelector('select').focus()};
 document.querySelectorAll('#v-add input[id^=c],#fModal').forEach(i=>i.oninput=liveSum);
@@ -550,7 +563,7 @@ $('saveProfile').onclick=()=>{state.profile={name:$('pName').value.trim(),boat:$
 
 // ---------- OVERHEAD ----------
 function resetOver(o){oEditId=o?o.id:null;$('oTitle').textContent=o?'Sunting overhead':'Tambah kos overhead';$('cancelOver').hidden=!o;$('saveOver').textContent=o?'Simpan perubahan':'Simpan overhead';
-  $('oDate').value=o?o.date:ymd(new Date());$('oAmt').value=o?o.amt:'';$('oCat').value=o?o.cat:'Minyak pukal / simpanan';$('oNote').value=o?.note||'';$('oMonthly').checked=!!o?.monthly}
+  $('oDate').value=o?o.date:ymd(new Date());$('oAmt').value=o?o.amt:'';$('oCat').value=o?o.cat:'Minyak pukal / simpanan';$('oNote').value=o?.note||'';$('oMonthly').checked=!!o?.monthly;syncDates()}
 function renderOver(){
   $('oTotal').textContent='Bulan ini: '+rm0(overSum(thisYM()));
   const list=[...state.over].sort((a,b)=>b.date.localeCompare(a.date));
@@ -579,6 +592,7 @@ function initReport(){
   const yv=$('rYear').value;$('rYear').innerHTML=[...ys].sort((a,b)=>b-a).map(y=>`<option>${y}</option>`).join('');$('rYear').value=yv||now.getFullYear();
   if(!$('rMonth').options.length){$('rMonth').innerHTML=BLN_P.map((b,i)=>`<option value="${i}">${b}</option>`).join('');$('rMonth').value=now.getMonth();$('rQ').value=Math.floor(now.getMonth()/3)+1}
   if(!$('rDay').value){const last=[...state.trips].sort((a,b)=>b.date.localeCompare(a.date))[0];$('rDay').value=last?last.date:ymd(now)}
+  syncDates();
   renderReport()}
 function renderReport(){
   const t=$('rType').value,daily=t==='d';
@@ -645,7 +659,7 @@ const n=new Date();
 $('today').textContent=HARI[n.getDay()]+', '+n.getDate()+' '+BLN_P[n.getMonth()]+' '+n.getFullYear();
 // Dalam paparan terbenam (cth: pautan Claude), tetingkap cetak disekat
 if(window.self!==window.top){$('doPrint').hidden=true;$('printHint').textContent='Cetak tidak tersedia dalam pautan ini. Untuk cetak atau simpan PDF, buka fail HTML dalam Chrome. Anda juga boleh tangkap skrin laporan.'}
-load();resetForm();resetOver();renderDash();
+setupDates();load();resetForm();resetOver();renderDash();
 // Simpan app dalam telefon supaya boleh buka tanpa internet
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 // Minta pelayar jangan padam data simpanan secara automatik
