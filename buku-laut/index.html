@@ -123,6 +123,7 @@ input[type=date],input[type=time]{padding-right:8px;font-size:16px}
 .dwrap{position:relative}
 .dwrap input{color:transparent}
 .dwrap input::-webkit-datetime-edit{color:transparent}
+.dwrap input::-webkit-datetime-edit-hour-field,.dwrap input::-webkit-datetime-edit-minute-field,.dwrap input::-webkit-datetime-edit-ampm-field,.dwrap input::-webkit-datetime-edit-day-field,.dwrap input::-webkit-datetime-edit-month-field,.dwrap input::-webkit-datetime-edit-year-field{background:transparent;color:transparent}
 .dwrap .dshow{position:absolute;left:13px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:17px;font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
 .dwrap .dshow.empty{color:var(--faint);font-weight:400}
 .check{display:flex;gap:10px;align-items:center;font-weight:500;margin:0}
@@ -403,15 +404,16 @@ const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const ymOf=(y,m)=>y+'-'+pad(m+1);
 const thisYM=()=>ymd(new Date()).slice(0,7);
+const t12=v=>{if(!v)return'--';let[h,m]=v.split(':').map(Number);const ap=h<12?'AM':'PM';h=h%12||12;return h+':'+String(m).padStart(2,'0')+' '+ap};
 const fmtDate=s=>{const d=new Date(s+'T00:00');return d.getDate()+' '+BLN[d.getMonth()]+' '+d.getFullYear()};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 let state={trips:[],over:[],profile:{},sample:false};
 
 // ---------- TARIKH hh/bb/tttt ----------
-function syncDates(){document.querySelectorAll('.dwrap').forEach(w=>{const v=w.querySelector('input').value,s=w.querySelector('.dshow');
-  s.textContent=v?v.slice(8,10)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'hh/bb/tttt';s.classList.toggle('empty',!v)})}
-function setupDates(){document.querySelectorAll('input[type=date]').forEach(i=>{const w=document.createElement('div');w.className='dwrap';
+function syncDates(){document.querySelectorAll('.dwrap').forEach(w=>{const i=w.querySelector('input'),v=i.value,s=w.querySelector('.dshow');
+  s.textContent=i.type==='time'?(v?t12(v):'-- : --'):(v?v.slice(8,10)+'/'+v.slice(5,7)+'/'+v.slice(0,4):'hh/bb/tttt');s.classList.toggle('empty',!v)})}
+function setupDates(){document.querySelectorAll('input[type=date],input[type=time]').forEach(i=>{const w=document.createElement('div');w.className='dwrap';
   i.parentNode.insertBefore(w,i);w.appendChild(i);const s=document.createElement('span');s.className='dshow';s.setAttribute('aria-hidden','true');w.appendChild(s);
   i.addEventListener('input',syncDates);i.addEventListener('change',syncDates)});syncDates()}
 let editId=null,oEditId=null;
@@ -535,7 +537,7 @@ function renderList(){
   sel.value=ms.includes(cur)?cur:'';
   const list=state.trips.filter(t=>!sel.value||t.date.startsWith(sel.value)).sort((a,b)=>b.date.localeCompare(a.date));
   $('tripList').innerHTML=list.length?list.map(t=>{const P=sales(t)-cost(t);
-    return `<div class="trip"><div class="row"><div><b>${fmtDate(t.date)}</b> ${state.sample?'<span class="tag">Contoh</span>':''}<div class="muted num">${esc(t.spot||'—')} · ${kg(t).toFixed(1)} kg · ${esc(t.out||'--')}–${esc(t.in||'--')}</div></div>
+    return `<div class="trip"><div class="row"><div><b>${fmtDate(t.date)}</b> ${state.sample?'<span class="tag">Contoh</span>':''}<div class="muted num">${esc(t.spot||'—')} · ${kg(t).toFixed(1)} kg · ${t12(t.out)} – ${t12(t.in)}</div></div>
     <div class="p ${P<0?'neg':'pos'}">${rm0(P)}</div></div>
     <div class="muted">${t.catch.map(c=>esc(c.name)+' '+c.kg+' kg').join(', ')}</div>
     ${modal(t)>0?`<div class="muted num">Modal ${rm0(modal(t))} · pulangan ${roi(P,modal(t))}</div>`:''}
@@ -638,7 +640,7 @@ function renderReport(){
     ${cl.length?cl.map(c=>`<tr><td>${esc(c.l)}</td><td>${n2(c.v)}</td></tr>`).join(''):'<tr><td colspan="2">Tiada kos direkod.</td></tr>'}</tbody>
     <tfoot><tr><td>Jumlah kos</td><td>${n2(T.C+T.O)}</td></tr></tfoot></table></div></div>`;
   if(t==='m'||daily)h+=`<div><h4>Senarai trip</h4><div class="tw"><table><thead><tr><th>${daily?'Masa':'Tarikh'}</th><th>Lokasi</th><th>Hasil (kg)</th><th>Modal</th><th>Jualan</th><th>Kos</th><th>Untung</th></tr></thead><tbody>
-    ${trips.length?trips.map(x=>{const d=new Date(x.date+'T00:00'),P=sales(x)-cost(x);return `<tr><td>${daily?esc((x.out||'--')+'–'+(x.in||'--')):d.getDate()+' '+BLN[d.getMonth()]}</td><td class="l">${esc(x.spot||'—')}</td><td>${kg(x).toFixed(1)}</td><td>${n2(modal(x))}</td><td>${n2(sales(x))}</td><td>${n2(cost(x))}</td><td${neg(P)}>${n2(P)}</td></tr>`}).join(''):'<tr><td colspan="7">Tiada trip.</td></tr>'}</tbody></table></div></div>`;
+    ${trips.length?trips.map(x=>{const d=new Date(x.date+'T00:00'),P=sales(x)-cost(x);return `<tr><td>${daily?t12(x.out)+' – '+t12(x.in):d.getDate()+' '+BLN[d.getMonth()]}</td><td class="l">${esc(x.spot||'—')}</td><td>${kg(x).toFixed(1)}</td><td>${n2(modal(x))}</td><td>${n2(sales(x))}</td><td>${n2(cost(x))}</td><td${neg(P)}>${n2(P)}</td></tr>`}).join(''):'<tr><td colspan="7">Tiada trip.</td></tr>'}</tbody></table></div></div>`;
   h+=`<div class="sign"><div>Disediakan oleh</div><div>Tarikh</div></div>
   <div class="foot"><span>Buku Laut Nelayan · dijana ${now.getDate()} ${BLN_P[now.getMonth()]} ${now.getFullYear()}</span><span>Hak cipta terpelihara Abu Hanifah bin Rozali</span></div>`;
   $('paper').innerHTML=h}

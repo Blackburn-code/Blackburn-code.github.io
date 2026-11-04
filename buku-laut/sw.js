@@ -1,5 +1,5 @@
 // Naikkan nombor versi setiap kali app dikemas kini
-const CACHE = 'buku-laut-v2';
+const CACHE = 'buku-laut-v3';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
